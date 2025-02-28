@@ -1,6 +1,5 @@
 import { UUID } from "mongodb";
 import mongoose, { Document } from "mongoose";
-import { v4 as uuidv4 } from "uuid";
 
 export interface IOrderProduct {
   productId: string;

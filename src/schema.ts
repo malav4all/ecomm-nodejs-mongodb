@@ -19,24 +19,24 @@ export const schema = buildSchema(`
     revenue: Float!
   }
 
-  type SalesAnalytics {
-    totalRevenue: Float!
-    completedOrders: Int!
-    categoryBreakdown: [CategoryRevenue!]!
+    type SalesAnalytics {
+      totalRevenue: Float!
+      completedOrders: Int!
+      categoryBreakdown: [CategoryRevenue!]!
+    }
+  type OrderProduct {
+    productId: String!
+    quantity: Int!
+    priceAtPurchase: Float!
   }
-type OrderProduct {
-  productId: String!
-  quantity: Int!
-  priceAtPurchase: Float!
-}
-  type Order {
-  _id: ID!
-  customerId: String!
-  products: [OrderProduct!]!
-  totalAmount: Float!
-  orderDate: String!
-  status: String!
-}
+    type Order {
+    _id: ID!
+    customerId: String!
+    products: [OrderProduct!]!
+    totalAmount: Float!
+    orderDate: String!
+    status: String!
+  }
 
   type Query {
     getCustomerSpending(customerId: ID!): CustomerSpending

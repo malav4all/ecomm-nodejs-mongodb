@@ -1,12 +1,8 @@
 import { Order } from "./models/Order";
-import { ObjectId, BSON, UUID, Binary } from "mongodb";
-import { Product } from "./models/Product";
-import mongoose from "mongoose";
+import { BSON } from "mongodb";
 
 export const resolvers = {
-  // 1️⃣ Get Customer Spending Using Aggregation
   getCustomerSpending: async ({ customerId }: { customerId: string }) => {
-    // Convert UUID string to MongoDB Binary format (Subtype 4)
     const binaryCustomerId = new BSON.Binary(
       Buffer.from(customerId.replace(/-/g, ""), "hex"),
       BSON.Binary.SUBTYPE_UUID
@@ -47,13 +43,10 @@ export const resolvers = {
     };
   },
 
-  // 2️⃣ Get Top Selling Products Using Aggregation
   getTopSellingProducts: async ({ limit }: { limit: number }) => {
     try {
       const topSelling = await Order.aggregate([
-        // Step 1: Filter orders (adjust the status as needed; your sample uses "dev")
         { $match: { status: "completed" } },
-        // Step 2: Parse the products string into an array
         {
           $addFields: {
             parsedProducts: {
@@ -61,7 +54,6 @@ export const resolvers = {
                 body: function (productsStr: any) {
                   if (typeof productsStr === "string") {
                     try {
-                      // Replace single quotes with double quotes and parse the JSON
                       return JSON.parse(productsStr.replace(/'/g, '"'));
                     } catch (e) {
                       return [];
@@ -75,19 +67,15 @@ export const resolvers = {
             },
           },
         },
-        // Step 3: Unwind the parsed products array
         { $unwind: "$parsedProducts" },
-        // Step 4: Group by productId (which is a UUID string) and sum the quantities
         {
           $group: {
             _id: "$parsedProducts.productId",
             totalSold: { $sum: "$parsedProducts.quantity" },
           },
         },
-        // Step 5: Sort by totalSold in descending order and limit the results
         { $sort: { totalSold: -1 } },
         { $limit: limit },
-        // Step 6: Lookup product details from the products collection using a pipeline
         {
           $lookup: {
             from: "products",
@@ -136,15 +124,12 @@ export const resolvers = {
             as: "productDetails",
           },
         },
-
-        // Step 7: Unwind the productDetails (keeping orders even if no matching product)
         {
           $unwind: {
             path: "$productDetails",
             preserveNullAndEmptyArrays: true,
           },
         },
-        // Step 8: Project the final output shape
         {
           $project: {
             productId: "$_id",
@@ -161,7 +146,6 @@ export const resolvers = {
     }
   },
 
-  // 3️⃣ Get Sales Analytics Using Aggregation
   getSalesAnalytics: async ({
     startDate,
     endDate,
@@ -194,7 +178,6 @@ export const resolvers = {
     ]);
 
     const categoryBreakdown = await Order.aggregate([
-      // Convert orderDate string to a Date if needed, and parse products if stored as a string
       {
         $addFields: {
           orderDateConverted: { $toDate: "$orderDate" },
@@ -327,60 +310,48 @@ export const resolvers = {
     limit?: number;
   }) => {
     try {
-      // Calculate skip value for pagination
       const skip = (page - 1) * limit;
 
-      // Convert the UUID string to binary format
       const buffer = Buffer.from(customerId.replace(/-/g, ""), "hex");
       const binaryCustomerId = new BSON.Binary(buffer, 0x04);
 
-      // Create aggregation pipeline
       const pipeline: any = [
-        // Match by customer ID
         {
           $match: {
             customerId: binaryCustomerId,
           },
         },
-        // Sort by order date descending
         {
           $sort: {
             orderDate: -1,
           },
         },
-        // Skip for pagination
         {
           $skip: skip,
         },
-        // Limit results
         {
           $limit: limit,
         },
-        // Lookup customer details
         {
           $lookup: {
-            from: "customers", // Replace with your actual customers collection name
+            from: "customers",
             localField: "customerId",
             foreignField: "_id",
             as: "customerDetails",
           },
         },
-        // Unwind the customer details array
         {
           $unwind: {
             path: "$customerDetails",
             preserveNullAndEmptyArrays: true,
           },
         },
-        // Optional: Lookup product details
         {
           $addFields: {
             parsedProducts: {
               $function: {
                 body: function (productsString: any) {
                   try {
-                    // Convert string representation of products to actual array
-                    // Adjust this based on how your products are stored
                     return JSON.parse(productsString.replace(/'/g, '"'));
                   } catch (e) {
                     return [];
@@ -392,7 +363,6 @@ export const resolvers = {
             },
           },
         },
-        // Project to shape the final output
         {
           $project: {
             _id: 1,

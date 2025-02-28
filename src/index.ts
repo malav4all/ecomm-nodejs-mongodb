@@ -10,10 +10,8 @@ dotenv.config();
 
 const app = express();
 
-// Connect to MongoDB
 connectDB();
 
-// GraphQL Endpoint
 app.use(
   "/graphql",
   graphqlHTTP({
@@ -22,7 +20,6 @@ app.use(
   })
 );
 
-// Enable GraphQL Playground
 app.get("/playground", (_req, res) => {
   res.setHeader("Content-Type", "text/html");
   res.send(renderPlaygroundPage({ endpoint: "/graphql" }));
@@ -31,8 +28,8 @@ app.get("/playground", (_req, res) => {
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}/graphql`);
+  console.log(`Server running at http://localhost:${PORT}/graphql`);
   console.log(
-    `🎮 GraphQL Playground available at http://localhost:${PORT}/playground`
+    `GraphQL Playground available at http://localhost:${PORT}/playground`
   );
 });
