@@ -7,6 +7,7 @@ This project is a GraphQL API built using Node.js, MongoDB, and GraphQL. It prov
 - Get total spending, last purchase date, and average order value for a customer.
 - Retrieve top-selling products based on total quantity sold.
 - Analyze revenue trends, including total revenue, completed orders, and category-wise revenue breakdown.
+- Fetch paginated orders for a specific customer.
 
 ## Technologies Used
 - **Node.js**
@@ -89,13 +90,23 @@ query {
 }
 ```
 
-## Bonus Features
-- Mutation to place an order.
-- Pagination for customer order history.
-- Redis caching for analytics queries.
+### 4️⃣ Get Customer Orders (Pagination)
+```graphql
+query {
+  getCustomerOrders(customerId: "63f8b3d5a7b1d7f3b0a2c5e1", page: 1, limit: 5) {
+    _id
+    totalAmount
+    orderDate
+    status
+    products {
+      productId
+      quantity
+      priceAtPurchase
+    }
+  }
+}
+```
 
-## License
-This project is licensed under the **MIT License**.
 
 ## Author
 **Malav**
